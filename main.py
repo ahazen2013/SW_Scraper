@@ -3,10 +3,10 @@ from bs4 import BeautifulSoup
 import csv
 
 
-# scrape names of a given species from Wookieepedia (defaults to humans)
-def scrape_species(link='/wiki/Category:Humans', species='human'):
-    url = 'https://starwars.fandom.com' + link
-    f = open('Names/sw_' + species + '_names.txt', 'w', encoding='utf-8')
+# scrape names from Wookieepedia
+def scrape_humans():
+    url = 'https://starwars.fandom.com/wiki/Category:Humans'
+    f = open('sw_human_names.txt', 'w', encoding='utf-8')
     while True:
         page = requests.get(url)
         # print(page.status_code)
@@ -61,21 +61,5 @@ def scrape_planets():
             writer.writerow(i)
 
 
-# scrape names of all members of all species from Wookieepedia
-def scrape_all_names():
-    url = 'https://starwars.fandom.com/wiki/Category:Individuals_by_species'
-    while True:
-        page = requests.get(url)
-        soup = BeautifulSoup(page.text, 'html.parser')
-        species = soup.find_all(class_='category-page__member-link')
-        for i in species:
-            name = i['title'][9:]
-            print(name.lower())
-            scrape_species(link=i['href'], species=name.lower())
-        prev = ''
-        next_url = soup.find_all(class_='category-page__pagination-next wds-button wds-is-secondary')
-        if not next_url:
-            break
-        url = next_url[0].get('href')
-
-scrape_all_names()
+scrape_humans()
+scrape_planets()
