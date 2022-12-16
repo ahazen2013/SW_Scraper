@@ -4,7 +4,7 @@ import csv
 
 
 # scrape names of a given species from Wookieepedia (defaults to humans)
-def scrape_species(link='/wiki/Category:Humans', species='human'):
+def scrape_species_names(link='/wiki/Category:Humans', species='human'):
     url = 'https://starwars.fandom.com' + link
     f = open('Names/sw_' + species + '_names.txt', 'w', encoding='utf-8')
     while True:
@@ -71,9 +71,64 @@ def scrape_all_names():
         for i in species:
             name = i['title'][9:]
             print(name.lower())
-            scrape_species(link=i['href'], species=name.lower())
+            scrape_species_names(link=i['href'], species=name.lower())
         prev = ''
         next_url = soup.find_all(class_='category-page__pagination-next wds-button wds-is-secondary')
         if not next_url:
             break
         url = next_url[0].get('href')
+
+
+def scrape_links(link='/wiki/Category:Humans', species='human'):
+    url = 'https://starwars.fandom.com' + link
+    links = []
+    while True:
+        page = requests.get(url)
+        soup = BeautifulSoup(page.text, 'html.parser')
+        names = soup.find_all(class_='category-page__member-link')
+        prev = ''
+        for i in names:
+            name = 'https://starwars.fandom.com' + i.get('href')
+            if 'Legends' not in name and 'Category:' not in name:
+                links.append(name)
+        next_url = soup.find_all(class_='category-page__pagination-next wds-button wds-is-secondary')
+        if not next_url:
+            break
+        url = next_url[0].get('href')
+    links = links[1:]
+    print(len(links))
+    return links
+
+
+def scrape_characters(links=['https://starwars.fandom.com/wiki/Luke_Skywalker', 'https://starwars.fandom.com/wiki/Leia_Skywalker_Organa_Solo']):
+    character_data = ['Name', 'Homeworld', 'Born', 'Died', 'Species', 'Gender', 'Height', 'Mass', 'Hair color',
+                      'Eye color', 'Skin color', 'Cybernetics', 'Affiliation(s)', 'Masters', 'Apprentices']
+    characters = []
+    for i in links:
+        print(i)
+        character = dict()
+        for j in character_data:
+            character[j] = None
+        url = i
+        page = requests.get(url)
+        soup = BeautifulSoup(page.text, 'html.parser')
+        species = soup.find_all(class_='pi-item pi-data pi-item-spacing pi-border-color')
+        character['Name'] = soup.find("h1").text.strip()
+        for k in species:
+            try:
+                character[k.find(class_='pi-data-label pi-secondary-font').text] = k.find(class_='pi-data-value pi-font').text
+            except KeyError:
+                pass
+        print(character)
+        characters.append(character)
+    with open(f'sw_characters.csv', 'w', encoding='utf-8', newline='') as file:
+        writer = csv.DictWriter(file, fieldnames=character_data)
+        writer.writeheader()
+        for i in characters:
+            try:
+                writer.writerow(i)
+            except ValueError:
+                pass
+
+
+scrape_characters(scrape_links())
