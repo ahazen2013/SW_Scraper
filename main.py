@@ -78,7 +78,7 @@ def scrape_all_names():
             break
         url = next_url[0].get('href')
 
-
+# scrape links to members of a given species from Wookieepedia (defaults to humans)
 def scrape_links(link='/wiki/Category:Humans', species='human'):
     url = 'https://starwars.fandom.com' + link
     links = []
@@ -100,6 +100,9 @@ def scrape_links(link='/wiki/Category:Humans', species='human'):
     return links
 
 
+# scrape details of every character in a list of links
+# Details: Name, Homeworld, Born, Died, Species, Gender, Height, Mass, Hair color,
+#       Eye color, Skin color, Cybernetics, Affiliation(s), Masters, Apprentices
 def scrape_characters(links=['https://starwars.fandom.com/wiki/Luke_Skywalker', 'https://starwars.fandom.com/wiki/Leia_Skywalker_Organa_Solo']):
     character_data = ['Name', 'Homeworld', 'Born', 'Died', 'Species', 'Gender', 'Height', 'Mass', 'Hair color',
                       'Eye color', 'Skin color', 'Cybernetics', 'Affiliation(s)', 'Masters', 'Apprentices']
